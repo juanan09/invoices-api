@@ -1,0 +1,23 @@
+{
+  "name": "invoices-api",
+  "version": "1.0.0",
+  "description": "API para guardar y gestionar facturas",
+  "homepage": "https://github.com/juanan09/invoices-api#readme",
+  "bugs": {
+    "url": "https://github.com/juanan09/invoices-api/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juanan09/invoices-api.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
