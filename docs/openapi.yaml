@@ -1,0 +1,267 @@
+openapi: 3.0.3
+info:
+  title: API de Facturas
+  description: API REST para la gestión y emisión de facturas (borrador y definitivas).
+  version: 1.0.0
+servers:
+  - url: /api
+paths:
+  /invoices:
+    post:
+      summary: Crear una nueva factura
+      description: Crea una nueva factura. Por defecto se crea en estado 'borrador'.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceDraftRequest'
+      responses:
+        '201':
+          description: Factura creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+    get:
+      summary: Lista todas las facturas
+      description: Lista todas las facturas, con opción de filtrado (por estado, CIF, etc.).
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [borrador, definitivo]
+          description: Filtrar por estado de la factura
+        - in: query
+          name: clientCif
+          schema:
+            type: string
+          description: Filtrar por CIF del cliente
+      responses:
+        '200':
+          description: Lista de facturas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InvoiceListResponse'
+
+  /invoices/{id}:
+    get:
+      summary: Obtener los detalles de una factura
+      description: Obtiene los detalles de una factura específica por su ID interno.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID interno de la factura
+      responses:
+        '200':
+          description: Detalles de la factura
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '404':
+          description: Factura no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Actualizar factura
+      description: Actualiza los datos de la factura (solo permitido si `status == 'borrador'`).
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceDraftRequest'
+      responses:
+        '200':
+          description: Factura actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '400':
+          description: Error de validación o no se puede modificar una factura definitiva
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: No se puede modificar una factura en estado definitivo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Eliminar factura
+      description: Elimina la factura (solo permitido si `status == 'borrador'`).
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Factura eliminada correctamente
+        '400':
+          description: No se puede eliminar una factura definitiva
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: No se puede eliminar una factura en estado definitivo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /invoices/{id}/finalize:
+    patch:
+      summary: Finalizar factura
+      description: Cambia el estado de la factura de 'borrador' a 'definitivo'. Se genera y asigna la numeración correlativa.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Factura finalizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '400':
+          description: La factura ya se encuentra en estado definitivo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    InvoiceDraftRequest:
+      type: object
+      required:
+        - clientCif
+        - clientName
+        - clientAddress
+        - baseAmount
+        - vatAmount
+      properties:
+        clientCif:
+          type: string
+          example: "B12345678"
+        clientName:
+          type: string
+          example: "Empresa Ejemplo S.L."
+        clientAddress:
+          type: string
+          example: "Calle Falsa 123, Madrid"
+        baseAmount:
+          type: number
+          format: float
+          example: 100.00
+        vatAmount:
+          type: number
+          format: float
+          example: 21.00
+    
+    Invoice:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "uuid-factura"
+        status:
+          type: string
+          enum: [borrador, definitivo]
+          example: "borrador"
+        clientCif:
+          type: string
+          example: "B12345678"
+        clientName:
+          type: string
+          example: "Empresa Ejemplo S.L."
+        clientAddress:
+          type: string
+          example: "Calle Falsa 123, Madrid"
+        baseAmount:
+          type: number
+          format: float
+          example: 100.00
+        vatAmount:
+          type: number
+          format: float
+          example: 21.00
+        totalAmount:
+          type: number
+          format: float
+          example: 121.00
+        invoiceNumber:
+          type: string
+          nullable: true
+          example: null
+        createdAt:
+          type: string
+          format: date-time
+          example: "2026-02-24T18:00:00Z"
+          
+    InvoiceListResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "uuid-factura-1"
+        status:
+          type: string
+          enum: [borrador, definitivo]
+          example: "definitivo"
+        invoiceNumber:
+          type: string
+          nullable: true
+          example: "BT001"
+        clientCif:
+          type: string
+          example: "B12345678"
+        clientName:
+          type: string
+          example: "Empresa Ejemplo S.L."
+        totalAmount:
+          type: number
+          format: float
+          example: 121.00
+        createdAt:
+          type: string
+          format: date-time
+          example: "2026-02-24T18:00:00Z"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "No se puede modificar una factura en estado definitivo"
