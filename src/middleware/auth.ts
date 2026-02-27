@@ -1,0 +1,19 @@
+import { Request, Response, NextFunction } from 'express';
+
+const VALID_TOKEN = 'mi-token-secreto-123';
+
+export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Token no proporcionado' });
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    if (token !== VALID_TOKEN) {
+        return res.status(403).json({ error: 'Token inválido' });
+    }
+
+    next();
+};

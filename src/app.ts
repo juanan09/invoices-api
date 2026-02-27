@@ -3,6 +3,8 @@ import { InMemoryInvoiceRepository } from './repositories/InMemoryInvoiceReposit
 import { InvoiceUseCases } from './use-cases/InvoiceUseCases';
 import { InvoiceController } from './transport/InvoiceController';
 import { createInvoiceRouter } from './transport/invoiceRoutes';
+import { requestLogger } from './middleware/requestLogger';
+import { authMiddleware } from './middleware/auth';
 
 export const createApp = () => {
     const app = express();
@@ -14,13 +16,19 @@ export const createApp = () => {
     const invoiceRouter = createInvoiceRouter(invoiceController);
 
     app.use(express.json());
+    app.use(requestLogger);
 
     app.get('/', (req: Request, res: Response) => {
         res.send('Hello Word');
     });
 
-    // Añadir rutas al path /api/invoices
+    // Rutas públicas
     app.use('/api/invoices', invoiceRouter);
+
+    // Ruta protegida (requiere token)
+    app.get('/api/protected', authMiddleware, (req: Request, res: Response) => {
+        res.status(200).json({ message: 'Has accedido a un recurso protegido 🔐', timestamp: new Date().toISOString() });
+    });
 
     return app;
 };
