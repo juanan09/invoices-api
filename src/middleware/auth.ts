@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 
-const VALID_TOKEN = 'mi-token-secreto-123';
+const VALID_TOKEN = process.env.AUTH_TOKEN;
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;

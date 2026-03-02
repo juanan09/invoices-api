@@ -12,6 +12,8 @@ export interface Invoice {
 }
 
 export interface InvoiceRepository {
+    connect(): Promise<void>;
+    disconnect(): Promise<void>;
     save(invoice: Invoice): Promise<Invoice>;
     findAll(filters?: { status?: string; clientCif?: string }): Promise<Invoice[]>;
     findById(id: string): Promise<Invoice | null>;

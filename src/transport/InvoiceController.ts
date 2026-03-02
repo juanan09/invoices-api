@@ -18,9 +18,10 @@ export class InvoiceController {
 
     getInvoices = async (req: Request, res: Response) => {
         try {
-            const status = req.query.status as string;
-            const clientCif = req.query.clientCif as string;
-            const invoices = await this.useCases.getInvoices({ status, clientCif });
+            const filters: { status?: string; clientCif?: string } = {};
+            if (req.query.status) filters.status = req.query.status as string;
+            if (req.query.clientCif) filters.clientCif = req.query.clientCif as string;
+            const invoices = await this.useCases.getInvoices(filters);
             res.status(200).json(invoices);
         } catch (error: any) {
             res.status(500).json({ error: error.message });
@@ -29,7 +30,7 @@ export class InvoiceController {
 
     getInvoiceById = async (req: Request, res: Response) => {
         try {
-            const invoice = await this.useCases.getInvoiceById(req.params.id);
+            const invoice = await this.useCases.getInvoiceById(req.params.id as string);
             res.status(200).json(invoice);
         } catch (error: any) {
             if (error.message === 'Factura no encontrada') {
@@ -41,7 +42,7 @@ export class InvoiceController {
 
     updateInvoice = async (req: Request, res: Response) => {
         try {
-            const invoice = await this.useCases.updateInvoice(req.params.id, req.body);
+            const invoice = await this.useCases.updateInvoice(req.params.id as string, req.body);
             res.status(200).json(invoice);
         } catch (error: any) {
             if (error.message === 'Factura no encontrada') {
@@ -59,7 +60,7 @@ export class InvoiceController {
 
     finalizeInvoice = async (req: Request, res: Response) => {
         try {
-            const invoice = await this.useCases.finalizeInvoice(req.params.id);
+            const invoice = await this.useCases.finalizeInvoice(req.params.id as string);
             res.status(200).json(invoice);
         } catch (error: any) {
             if (error.message === 'Factura no encontrada') {
@@ -74,7 +75,7 @@ export class InvoiceController {
 
     deleteInvoice = async (req: Request, res: Response) => {
         try {
-            await this.useCases.deleteInvoice(req.params.id);
+            await this.useCases.deleteInvoice(req.params.id as string);
             res.status(204).send();
         } catch (error: any) {
             if (error.message === 'Factura no encontrada') {

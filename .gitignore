@@ -2,6 +2,7 @@ node_modules/
 dist/
 coverage/
 .env
+docs/curl_commands.md
 
 # Logs
 logs

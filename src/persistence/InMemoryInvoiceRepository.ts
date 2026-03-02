@@ -4,6 +4,14 @@ export class InMemoryInvoiceRepository implements InvoiceRepository {
     private invoices: Invoice[] = [];
     private nextInvoiceNumber = 1;
 
+    async connect(): Promise<void> {
+        // No-op: la memoria no requiere conexión
+    }
+
+    async disconnect(): Promise<void> {
+        // No-op: la memoria no requiere desconexión
+    }
+
     async save(invoice: Invoice): Promise<Invoice> {
         this.invoices.push(invoice);
         return invoice;
@@ -21,13 +29,13 @@ export class InMemoryInvoiceRepository implements InvoiceRepository {
     }
 
     async findById(id: string): Promise<Invoice | null> {
-        return this.invoices.find(inv => inv.id === id) || null;
+        return this.invoices.find(inv => inv.id === id) ?? null;
     }
 
     async update(id: string, updateData: Partial<Invoice>): Promise<Invoice | null> {
         const index = this.invoices.findIndex(inv => inv.id === id);
         if (index === -1) return null;
-        this.invoices[index] = { ...this.invoices[index], ...updateData };
+        this.invoices[index] = { ...this.invoices[index], ...updateData } as Invoice;
         return this.invoices[index];
     }
 
